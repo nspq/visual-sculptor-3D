@@ -32,14 +32,17 @@ for image_path in image_paths:
     
     # Detect keypoints and compute descriptors
     keypoints, descriptors = sift.detectAndCompute(image, None)
-
+    
     # Draw keypoints on the black image
     image_with_keypoints = cv2.drawKeypoints(blank_image, keypoints, outImage=None)
     
     # Show the image with keypoints
-    cv2.imshow(image_with_keypoints)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    fname = f"outputs/imgOutputVis{image_path[17]}.jpg"
+
+    cv2.imwrite(fname, image_with_keypoints)
+    #cv2.imshow("Keypoints of Image", image_with_keypoints)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
     
     # Convert keypoints to a list of (x, y, size, angle, response, octave, class_id)
     keypoints_data = [(kp.pt[0], kp.pt[1], kp.size, kp.angle, kp.response, kp.octave, kp.class_id) for kp in keypoints]
