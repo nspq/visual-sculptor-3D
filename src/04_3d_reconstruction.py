@@ -19,9 +19,12 @@ def estimate_relative_poses(matches, keypoints_list):
         keypoints2 = keypoints_list[i + 1]
         matches_i = matches[i]
 
+        # Filter out matches with invalid indices
+        valid_matches = [m for m in matches_i if m['queryIdx'] < len(keypoints1) and m['trainIdx'] < len(keypoints2)]
+
         # Extract corresponding points from keypoints
-        pts1 = np.float32([keypoints1[m['queryIdx']][:2] for m in matches_i]).reshape(-1, 1, 2)
-        pts2 = np.float32([keypoints2[m['trainIdx']][:2] for m in matches_i]).reshape(-1, 1, 2)
+        pts1 = np.float32([keypoints1[m['queryIdx']][:2] for m in valid_matches]).reshape(-1, 1, 2)
+        pts2 = np.float32([keypoints2[m['trainIdx']][:2] for m in valid_matches]).reshape(-1, 1, 2)
 
         # Estimate fundamental matrix
         fundamental_matrix, _ = cv2.findFundamentalMat(pts1, pts2, cv2.FM_RANSAC)
@@ -52,9 +55,12 @@ def triangulate_3d_points(matches, keypoints_list, poses):
         keypoints2 = keypoints_list[i + 1]
         matches_i = matches[i]
 
+        # Filter out matches with invalid indices
+        valid_matches = [m for m in matches_i if m['queryIdx'] < len(keypoints1) and m['trainIdx'] < len(keypoints2)]
+
         # Extract corresponding points from keypoints
-        pts1 = np.float32([keypoints1[m['queryIdx']][:2] for m in matches_i]).reshape(-1, 1, 2)
-        pts2 = np.float32([keypoints2[m['trainIdx']][:2] for m in matches_i]).reshape(-1, 1, 2)
+        pts1 = np.float32([keypoints1[m['queryIdx']][:2] for m in valid_matches]).reshape(-1, 1, 2)
+        pts2 = np.float32([keypoints2[m['trainIdx']][:2] for m in valid_matches]).reshape(-1, 1, 2)
 
         # Projection matrices for the current and next images
         P1 = np.eye(4)
@@ -73,6 +79,7 @@ def triangulate_3d_points(matches, keypoints_list, poses):
     triangulated_points = np.vstack(triangulated_points)
 
     return triangulated_points
+
 
 def bundle_adjustment(poses, points, keypoints_list):
     # Implement code for bundle adjustment here (optional)
@@ -125,12 +132,16 @@ def main():
     # Set the working directory to the project root
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.chdir(project_root)
-    
-    # Load matches and keypoints
-    matches_file_paths = ['data/matches_image0_to_image1.npy', 'data/matches_image1_to_image2.npy', 'data/matches_image2_to_image3.npy']
-    matches = [np.load(match_file_path, allow_pickle=True) for match_file_path in matches_file_paths]
 
-    keypoints_file_paths = ['data/keypoints_image0.npy', 'data/keypoints_image1.npy', 'data/keypoints_image2.npy', 'data/keypoints_image3.npy']
+    data_dir = os.path.join(project_root, 'src', 'data')
+    
+    keypoints_dir = os.path.join(data_dir, "keypoints")
+    matches_dir = os.path.join(data_dir, "matches")
+    
+    keypoints_file_paths = [os.path.join(keypoints_dir, f) for f in os.listdir(keypoints_dir) if f.startswith('keypoints')]
+    matches_file_paths = [os.path.join(matches_dir, f) for f in os.listdir(matches_dir) if f.startswith('matches')]
+
+    matches = [np.load(match_file_path, allow_pickle=True) for match_file_path in matches_file_paths]
     keypoints_list = [np.load(kp_file_path) for kp_file_path in keypoints_file_paths]
 
     # Estimate relative camera poses
