@@ -10,6 +10,25 @@ import numpy as np
 import os
 import sys
 
+
+def resize_images(input_folder, output_folder, target_height, target_width):
+    # Ensure the output folder exists
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Loop through all files in the input folder
+    for filename in os.listdir(input_folder):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            # Read the image
+            image_path = os.path.join(input_folder, filename)
+            img = cv2.imread(image_path)
+
+            # Resize the image
+            resized_img = cv2.resize(img, (target_width, target_height))
+
+            # Save the resized image, overwriting the original
+            output_path = os.path.join(output_folder, filename)
+            cv2.imwrite(output_path, resized_img)
+
 def extract_features(image_dir):
     # Set the working directory to the project root
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,6 +46,8 @@ def extract_features(image_dir):
 
     # List image files in the specified directory
     image_files = [f for f in os.listdir(image_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    # os.makedirs(os.path.join(image_dir, 'resized_images'), exist_ok=True)
+    # resize_images(image_dir, os.path.join(image_dir, 'resized_images'), 600, 1300)
     image_paths = [os.path.join(image_dir, f) for f in image_files]
 
     # Initialize the SIFT feature extractor
