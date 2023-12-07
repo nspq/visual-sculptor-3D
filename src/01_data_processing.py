@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 import os
 import sys
+from natsort import natsorted
 
 def crop_images(initial_path, final_path):
     # Check if the final image path exists, create if not
@@ -15,10 +16,11 @@ def crop_images(initial_path, final_path):
         os.makedirs(final_path)
 
     # Get a list of all image files in the initial path and sort them
-    image_files = sorted([f for f in os.listdir(initial_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))])
+    image_files = natsorted([f for f in os.listdir(initial_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))])
 
     # Iterate over each image file
     for idx, image_file in enumerate(image_files):
+        print(image_file)
         # Read the image
         img = cv2.imread(os.path.join(initial_path, image_file))
 
