@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 
-def match_features(descriptors1, descriptors2, bf, ratio_threshold=0.75):
+def match_features(descriptors1, descriptors2, bf, ratio_threshold=0.70):
     # Perform brute-force matching
     matches_i = bf.knnMatch(descriptors1, descriptors2, k=2)
 
@@ -80,26 +80,26 @@ def main():
         # Perform feature matching
         good_matches = match_features(descriptors1, descriptors2, bf)
 
-        # Implement RANSAC to estimate homography
-        src_pts = np.float32([keypoints_list[i][m.queryIdx][:2] for m in good_matches]).reshape(-1, 1, 2)
-        dst_pts = np.float32([keypoints_list[i + 1][m.trainIdx][:2] for m in good_matches]).reshape(-1, 1, 2)
+        # # Implement RANSAC to estimate homography
+        # src_pts = np.float32([keypoints_list[i][m.queryIdx][:2] for m in good_matches]).reshape(-1, 1, 2)
+        # dst_pts = np.float32([keypoints_list[i + 1][m.trainIdx][:2] for m in good_matches]).reshape(-1, 1, 2)
 
-        # Use RANSAC to estimate homography
-        M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+        # # Use RANSAC to estimate homography
+        # M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
-        # Apply the estimated homography to the first image
+        # # Apply the estimated homography to the first image
         img1 = cv2.imread(image_paths[i])
-        warped_img1 = cv2.warpPerspective(img1, M, (img1.shape[1] + img1.shape[1], img1.shape[0]))
+        # warped_img1 = cv2.warpPerspective(img1, M, (img1.shape[1] + img1.shape[1], img1.shape[0]))
 
-        # Resize the warped image to match the size of the second image
-        warped_img1 = cv2.resize(warped_img1, (cv2.imread(image_paths[i + 1]).shape[1], cv2.imread(image_paths[i + 1]).shape[0]))
+        # # Resize the warped image to match the size of the second image
+        # warped_img1 = cv2.resize(warped_img1, (cv2.imread(image_paths[i + 1]).shape[1], cv2.imread(image_paths[i + 1]).shape[0]))
 
-        # Concatenate the warped image and the second image
-        result = np.concatenate([warped_img1, cv2.imread(image_paths[i + 1])], axis=1)
+        # # Concatenate the warped image and the second image
+        # result = np.concatenate([warped_img1, cv2.imread(image_paths[i + 1])], axis=1)
 
-        # Save the resulting image
-        fname = os.path.join(outputs_dir, f"imageMatchRANSAC{i}and{i + 1}.jpg")
-        cv2.imwrite(fname, result)
+        # # Save the resulting image
+        # fname = os.path.join(outputs_dir, f"imageMatchRANSAC{i}and{i + 1}.jpg")
+        # cv2.imwrite(fname, result)
 
         # Convert cv2.DMatch objects to dictionaries
         matches_to_save = [{'queryIdx': m.queryIdx, 'trainIdx': m.trainIdx, 'distance': m.distance} for m in good_matches]
